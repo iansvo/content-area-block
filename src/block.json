@@ -26,5 +26,6 @@
 	},
 	"usesContext": [ "postId", "postType" ],
 	"textdomain": "content-area-block",
-	"editorScript": "file:./index.js"
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
 }
