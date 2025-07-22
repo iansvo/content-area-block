@@ -45,79 +45,89 @@ function useMetaBlockEditor( { attributes, context } ) {
 	);
 	const { meta } = editedRecord;
 	const content = useMemo( () => meta?.[ metaKey ] || '', [ meta, metaKey ] );
-	const [localBlocks, setLocalBlocks] = useState(() => editedRecord?.[ BLOCKS_KEY ]);
-	
-	const blocks = useMemo(() => {
+	const [ localBlocks, setLocalBlocks ] = useState(
+		() => editedRecord?.[ BLOCKS_KEY ]
+	);
+
+	const blocks = useMemo( () => {
 		// If we have local blocks from a recent edit, use those
-		if (localBlocks) {
+		if ( localBlocks ) {
 			return localBlocks;
 		}
 		// Otherwise use stored blocks
-		if (editedRecord?.[BLOCKS_KEY]) {
-			return editedRecord[BLOCKS_KEY];
+		if ( editedRecord?.[ BLOCKS_KEY ] ) {
+			return editedRecord[ BLOCKS_KEY ];
 		}
-		if (content) {
-			return parse(content) || [
-				createBlock(allowedBlocks?.[0] || 'core/paragraph'),
-			];
+		if ( content ) {
+			return (
+				parse( content ) || [
+					createBlock( allowedBlocks?.[ 0 ] || 'core/paragraph' ),
+				]
+			);
 		}
 		return [];
-	}, [localBlocks, editedRecord, BLOCKS_KEY, content, allowedBlocks]);
-	
+	}, [ localBlocks, editedRecord, BLOCKS_KEY, content, allowedBlocks ] );
+
 	const { editEntityRecord } = useDispatch( 'core' );
 
 	// Clear local blocks when content is successfully saved
-	useEffect(() => {
-		if (editedRecord?.[BLOCKS_KEY] && localBlocks) {
-			setLocalBlocks(null);
+	useEffect( () => {
+		if ( editedRecord?.[ BLOCKS_KEY ] && localBlocks ) {
+			setLocalBlocks( null );
 		}
-	}, [editedRecord, BLOCKS_KEY, localBlocks]);
+	}, [ editedRecord, BLOCKS_KEY, localBlocks ] );
 
 	const onChange = useCallback(
-			(newBlocks) => {
-					const serializedContent = __unstableSerializeAndClean(newBlocks);
-					
-	
-					if (content === serializedContent) {
-							return;
-					}
-	
-					// Set local blocks immediately for UI responsiveness
-					setLocalBlocks(newBlocks);
-	
-					const edits = {
-							[BLOCKS_KEY]: newBlocks,
-							meta: {
-									...meta,
-									[metaKey]: serializedContent,
-							},
-					};
-	
-					editEntityRecord('postType', postType, postId, edits);
-			},
-			[BLOCKS_KEY, content, editEntityRecord, meta, metaKey, postId, postType]
+		( newBlocks ) => {
+			const serializedContent = __unstableSerializeAndClean( newBlocks );
+
+			if ( content === serializedContent ) {
+				return;
+			}
+
+			// Set local blocks immediately for UI responsiveness
+			setLocalBlocks( newBlocks );
+
+			const edits = {
+				[ BLOCKS_KEY ]: newBlocks,
+				meta: {
+					...meta,
+					[ metaKey ]: serializedContent,
+				},
+			};
+
+			editEntityRecord( 'postType', postType, postId, edits );
+		},
+		[
+			BLOCKS_KEY,
+			content,
+			editEntityRecord,
+			meta,
+			metaKey,
+			postId,
+			postType,
+		]
 	);
 
 	const onInput = useCallback(
-			(newBlocks) => {
-					// Set local blocks immediately for UI responsiveness
-					setLocalBlocks(newBlocks);
+		( newBlocks ) => {
+			// Set local blocks immediately for UI responsiveness
+			setLocalBlocks( newBlocks );
 
-					const serializedContent = __unstableSerializeAndClean(newBlocks);
-	
-					const edits = {
-							[BLOCKS_KEY]: newBlocks,
-							meta: {
-									...meta,
-									[metaKey]: serializedContent,
-							},
-					};
-	
-					editEntityRecord('postType', postType, postId, edits);
-			},
-			[BLOCKS_KEY, editEntityRecord, meta, metaKey, postId, postType]
+			const serializedContent = __unstableSerializeAndClean( newBlocks );
+
+			const edits = {
+				[ BLOCKS_KEY ]: newBlocks,
+				meta: {
+					...meta,
+					[ metaKey ]: serializedContent,
+				},
+			};
+
+			editEntityRecord( 'postType', postType, postId, edits );
+		},
+		[ BLOCKS_KEY, editEntityRecord, meta, metaKey, postId, postType ]
 	);
-	
 
 	return { blocks, onChange, onInput };
 }
@@ -160,7 +170,12 @@ function ReadOnlyContent( {
 
 	return content?.protected ? (
 		<TagName { ...blockProps }>
-			<Warning>{ __( 'This content is password protected.', 'content-area-block' ) }</Warning>
+			<Warning>
+				{ __(
+					'This content is password protected.',
+					'content-area-block'
+				) }
+			</Warning>
 		</TagName>
 	) : (
 		<TagName
@@ -180,7 +195,7 @@ function EditableContent( {
 		const { getSettings } = select( blockEditorStore );
 		return getSettings()?.supportsLayout;
 	}, [] );
-	const defaultLayout = useSettings( ['layout'] )[0] || {};
+	const defaultLayout = useSettings( [ 'layout' ] )[ 0 ] || {};
 	const usedLayout = !! layout && layout.inherit ? defaultLayout : layout;
 	const { blocks, onChange, onInput } = useMetaBlockEditor( {
 		attributes: { metaKey, allowedBlocks },
@@ -195,7 +210,7 @@ function EditableContent( {
 		__experimentalLayout: themeSupportsLayout ? usedLayout : undefined,
 		allowedBlocks: allowedBlocks.length > 0 ? allowedBlocks : undefined,
 	} );
-	
+
 	return <div { ...props } />;
 }
 
@@ -224,10 +239,16 @@ function Placeholder( { metaKey = '' } ) {
 				{ metaKey
 					? sprintf(
 							// Translators: %s is the metaKey attribute value.
-							__( 'Post Content from meta_key: %s', 'content-area-block' ),
+							__(
+								'Post Content from meta_key: %s',
+								'content-area-block'
+							),
 							metaKey
 					  )
-					: __( 'Set a meta key to pull blocks from.', 'content-area-block' ) }
+					: __(
+							'Set a meta key to pull blocks from.',
+							'content-area-block'
+					  ) }
 			</p>
 		</div>
 	);
@@ -238,7 +259,10 @@ function RecursionError() {
 	return (
 		<div { ...blockProps }>
 			<Warning>
-				{ __( 'Block cannot be rendered inside itself.', 'content-area-block' ) }
+				{ __(
+					'Block cannot be rendered inside itself.',
+					'content-area-block'
+				) }
 			</Warning>
 		</div>
 	);
@@ -259,20 +283,26 @@ export default function ContentAreaEdit( {
 	} );
 	const [ hasAlreadyRendered, RecursionProvider ] =
 		useNoRecursiveRenders( postId );
-		
+
 	const isValidPostId = 'number' === typeof postId && postId;
 
 	if ( isValidPostId && postType && hasAlreadyRendered ) {
 		return <RecursionError />;
 	}
 
-	const handleMetaKeyChange = useCallback( function handleMetaKeyChange(value) {
-		setAttributes( { metaKey: value } )
-	}, [ setAttributes ] );
-	
-	const handleAllowedBlocksChange = useCallback( function handleAllowedBlocksChange(value) {
-		setAttributes( { allowedBlocks: value } )
-	}, [ setAttributes ] );
+	const handleMetaKeyChange = useCallback(
+		function handleMetaKeyChange( value ) {
+			setAttributes( { metaKey: value } );
+		},
+		[ setAttributes ]
+	);
+
+	const handleAllowedBlocksChange = useCallback(
+		function handleAllowedBlocksChange( value ) {
+			setAttributes( { allowedBlocks: value } );
+		},
+		[ setAttributes ]
+	);
 
 	return (
 		<RecursionProvider>
@@ -282,14 +312,16 @@ export default function ContentAreaEdit( {
 					layout={ layout }
 					metaKey={ metaKey }
 					allowedBlocks={ allowedBlocks }
-					postId={postId}
-					postType={postType}
+					postId={ postId }
+					postType={ postType }
 				/>
 			) : (
 				<Placeholder metaKey={ metaKey } />
 			) }
 			<InspectorControls>
-				<PanelBody title={ __( 'Content Settings', 'content-area-block' ) }>
+				<PanelBody
+					title={ __( 'Content Settings', 'content-area-block' ) }
+				>
 					<TextControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom

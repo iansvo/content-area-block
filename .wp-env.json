@@ -1,7 +1,7 @@
 {
 	"core": null,
-	"plugins": ["."],
-	"themes": ["https://downloads.wordpress.org/theme/ollie.1.4.9.zip"],
+	"plugins": [ "." ],
+	"themes": [ "https://downloads.wordpress.org/theme/ollie.1.4.9.zip" ],
 	"lifecycleScripts": {
 		"afterStart": "wp-env run cli wp theme activate ollie"
 	},
