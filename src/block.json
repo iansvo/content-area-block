@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "iansvo/content-area",
+	"version": "0.1.0",
+	"title": "Content Area",
+	"category": "theme",
+	"icon": "layout",
+	"description": "Adds a block content area to a site editor template.",
+	"keywords": [ "content", "area", "meta", "template", "fse" ],
+	"attributes": {
+		"metaKey": {
+			"type": "string",
+			"default": ""
+		},
+		"allowedBlocks": {
+			"type": "array",
+			"default": [],
+			"items": {
+				"type": "string"
+			}
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"usesContext": [ "postId", "postType" ],
+	"textdomain": "content-area-block",
+	"editorScript": "file:./index.js"
+}
