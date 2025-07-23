@@ -105,7 +105,7 @@ export function useMetaBlockEditor( { attributes, context } ) {
 	const { postType, postId: contextPostId } = context;
 	const providerId = useEntityId( 'postType', postType );
 	const postId = contextPostId ?? providerId;
-	const { allowedBlocks, metaKey } = attributes;
+	const { metaKey } = attributes;
 	const BLOCKS_KEY = `${ metaKey }_blocks`;
 	const editedRecord = useSelect(
 		( select ) => {
@@ -131,14 +131,10 @@ export function useMetaBlockEditor( { attributes, context } ) {
 			return editedRecord[ BLOCKS_KEY ];
 		}
 		if ( content ) {
-			return (
-				parse( content ) || [
-					createBlock( allowedBlocks?.[ 0 ] || 'core/paragraph' ),
-				]
-			);
+			return parse( content );
 		}
 		return EMPTY_ARRAY;
-	}, [ localBlocks, editedRecord, BLOCKS_KEY, content, allowedBlocks ] );
+	}, [ localBlocks, editedRecord, BLOCKS_KEY, content ] );
 
 	const { editEntityRecord, __unstableCreateUndoLevel } =
 		useDispatch( coreStore );

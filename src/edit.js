@@ -20,6 +20,7 @@ import {
 	FormTokenField,
 	PanelBody,
 	Notice,
+	SelectControl,
 } from '@wordpress/components';
 import { useEntityProp } from '@wordpress/core-data';
 
@@ -28,6 +29,19 @@ import {
 	useCanEditEntity,
 	useMetaBlockEditor,
 } from './hooks';
+
+const EMPTY_ARRAY = [];
+
+const blockFilterTypes = [
+	{
+		value: 'allow',
+		label: __( 'Allow', 'content-area-block' ),
+	},
+	{
+		value: 'disallow',
+		label: __( 'Disallow', 'content-area-block' ),
+	},
+];
 
 function ReadOnlyContent( {
 	parentLayout,
@@ -82,12 +96,12 @@ function ReadOnlyContent( {
 	);
 }
 
-function EditableContent( {
-	layout,
-	context = {},
-	metaKey = '',
-	allowedBlocks = [],
-} ) {
+function EditableContent( { layout, context = {}, attributes = {} } ) {
+	const {
+		allowedBlocks = [],
+		disallowedBlocks = [],
+		blockFilter = 'allow',
+	} = attributes;
 	const themeSupportsLayout = useSelect( ( select ) => {
 		const { getSettings } = select( blockEditorStore );
 		return getSettings()?.supportsLayout;
@@ -95,9 +109,24 @@ function EditableContent( {
 	const defaultLayout = useSettings( [ 'layout' ] )[ 0 ] || {};
 	const usedLayout = !! layout && layout.inherit ? defaultLayout : layout;
 	const { blocks, onChange, onInput } = useMetaBlockEditor( {
-		attributes: { metaKey, allowedBlocks },
+		attributes,
 		context,
 	} );
+
+	const allowedBlocksList = useMemo( () => {
+		const blockTypes = getBlockTypes();
+
+		const list =
+			blockFilter === 'allow'
+				? allowedBlocks
+				: blockTypes.map( ( { name } ) => name );
+
+		return blockFilter === 'disallow'
+			? list.filter(
+					( blockType ) => ! disallowedBlocks.includes( blockType )
+			  )
+			: list;
+	}, [ blockFilter, allowedBlocks, disallowedBlocks ] );
 
 	const blockProps = useBlockProps();
 	const props = useInnerBlocksProps( blockProps, {
@@ -105,7 +134,9 @@ function EditableContent( {
 		onInput,
 		onChange,
 		__experimentalLayout: themeSupportsLayout ? usedLayout : undefined,
-		allowedBlocks: allowedBlocks.length > 0 ? allowedBlocks : undefined,
+		allowedBlocks:
+			allowedBlocksList.length > 0 ? allowedBlocksList : undefined,
+		defaultBlock: [ allowedBlocks?.[ 0 ] || 'core/paragraph' ],
 	} );
 
 	return <div { ...props } />;
@@ -170,7 +201,12 @@ export default function ContentAreaEdit( {
 	attributes,
 	setAttributes,
 } ) {
-	const { metaKey, allowedBlocks = null } = attributes;
+	const {
+		metaKey,
+		allowedBlocks = [],
+		disallowedBlocks = [],
+		blockFilter = 'allow',
+	} = attributes;
 	const { layout = {} } = attributes;
 	const { postId, postType, editingMode } = useSelect( ( select ) => {
 		return {
@@ -198,6 +234,13 @@ export default function ContentAreaEdit( {
 		[ setAttributes ]
 	);
 
+	const handleDisallowedBlocksChange = useCallback(
+		function handleAllowedBlocksChange( value ) {
+			setAttributes( { disallowedBlocks: value } );
+		},
+		[ setAttributes ]
+	);
+
 	const blockSuggestions = useMemo( () => {
 		const blockTypes = getBlockTypes();
 		return blockTypes.map( ( block ) => block.name );
@@ -215,8 +258,7 @@ export default function ContentAreaEdit( {
 				<Content
 					context={ context }
 					layout={ layout }
-					metaKey={ metaKey }
-					allowedBlocks={ allowedBlocks }
+					attributes={ attributes }
 					postId={ postId }
 					postType={ postType }
 				/>
@@ -238,17 +280,43 @@ export default function ContentAreaEdit( {
 							onChange={ handleMetaKeyChange }
 							label={ __( 'Meta Key', 'content-area-block' ) }
 						/>
-						<FormTokenField
-							__next40pxDefaultSize
-							__nextHasNoMarginBottom
-							value={ allowedBlocks || [] }
-							onChange={ handleAllowedBlocksChange }
-							suggestions={ blockSuggestions }
+						<SelectControl
+							value={ blockFilter }
+							onChange={ ( newValue ) =>
+								setAttributes( { blockFilter: newValue } )
+							}
 							label={ __(
-								'Allowed Blocks',
+								'Block Filter Type',
 								'content-area-block'
 							) }
+							options={ blockFilterTypes }
 						/>
+						{ blockFilter === 'allow' && (
+							<FormTokenField
+								__next40pxDefaultSize
+								__nextHasNoMarginBottom
+								value={ allowedBlocks }
+								onChange={ handleAllowedBlocksChange }
+								suggestions={ blockSuggestions }
+								label={ __(
+									'Allowed Blocks',
+									'content-area-block'
+								) }
+							/>
+						) }
+						{ blockFilter === 'disallow' && (
+							<FormTokenField
+								__next40pxDefaultSize
+								__nextHasNoMarginBottom
+								value={ disallowedBlocks }
+								onChange={ handleDisallowedBlocksChange }
+								suggestions={ blockSuggestions }
+								label={ __(
+									'Disallowed Blocks',
+									'content-area-block'
+								) }
+							/>
+						) }
 					</PanelBody>
 				) : (
 					<PanelBody opened={ true }>

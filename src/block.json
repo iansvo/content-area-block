@@ -19,6 +19,21 @@
 			"items": {
 				"type": "string"
 			}
+		},
+		"disallowedBlocks": {
+			"type": "array",
+			"default": [],
+			"items": {
+				"type": "string"
+			}
+		},
+		"blockFilter": {
+			"type": "string",
+			"enum": [
+				"allow",
+				"disallow"
+			],
+			"default": "allow"
 		}
 	},
 	"supports": {
