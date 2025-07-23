@@ -29,10 +29,7 @@
 		},
 		"blockFilter": {
 			"type": "string",
-			"enum": [
-				"allow",
-				"disallow"
-			],
+			"enum": [ "allow", "disallow" ],
 			"default": "allow"
 		}
 	},

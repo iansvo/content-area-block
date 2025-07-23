@@ -30,9 +30,7 @@ import {
 	useMetaBlockEditor,
 } from './hooks';
 
-const EMPTY_ARRAY = [];
-
-const blockFilterTypes = [
+onst blockFilterTypes = [
 	{
 		value: 'allow',
 		label: __( 'Allow', 'content-area-block' ),
@@ -235,7 +233,7 @@ export default function ContentAreaEdit( {
 	);
 
 	const handleDisallowedBlocksChange = useCallback(
-		function handleAllowedBlocksChange( value ) {
+		function handleDisallowedBlocksChange( value ) {
 			setAttributes( { disallowedBlocks: value } );
 		},
 		[ setAttributes ]

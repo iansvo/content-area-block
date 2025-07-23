@@ -10,12 +10,10 @@ import {
 	createContext,
 	useMemo,
 	useEffect,
-	useRef,
 	useState,
 } from '@wordpress/element';
 import {
 	parse,
-	createBlock,
 	__unstableSerializeAndClean, // eslint-disable-line @wordpress/no-unsafe-wp-apis
 } from '@wordpress/blocks';
 
