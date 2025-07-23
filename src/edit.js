@@ -30,7 +30,7 @@ import {
 	useMetaBlockEditor,
 } from './hooks';
 
-onst blockFilterTypes = [
+const blockFilterTypes = [
 	{
 		value: 'allow',
 		label: __( 'Allow', 'content-area-block' ),
