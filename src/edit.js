@@ -2,13 +2,9 @@
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { useSelect, useDispatch } from '@wordpress/data';
+import { useSelect } from '@wordpress/data';
 import { store as editorStore } from '@wordpress/editor';
-import {
-	parse,
-	__unstableSerializeAndClean, // eslint-disable-line @wordpress/no-unsafe-wp-apis
-	createBlock,
-} from '@wordpress/blocks';
+import { parse } from '@wordpress/blocks';
 import {
 	useBlockProps,
 	useInnerBlocksProps,
@@ -16,121 +12,22 @@ import {
 	store as blockEditorStore,
 	Warning,
 	InspectorControls,
-	__experimentalUseBlockPreview as useBlockPreview,
+	__experimentalUseBlockPreview as useBlockPreview, // eslint-disable-line @wordpress/no-unsafe-wp-apis
 } from '@wordpress/block-editor';
+import { useCallback, useMemo } from '@wordpress/element';
 import {
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-	useMemo,
-} from '@wordpress/element';
-import { TextControl, FormTokenField, PanelBody } from '@wordpress/components';
+	TextControl,
+	FormTokenField,
+	PanelBody,
+	Notice,
+} from '@wordpress/components';
 import { useEntityProp } from '@wordpress/core-data';
 
-import { useNoRecursiveRenders, useCanEditEntity } from './hooks';
-
-function useMetaBlockEditor( { attributes, context } ) {
-	const { postType, postId } = context;
-	const { allowedBlocks, metaKey } = attributes;
-	const loadBlocks = useRef( true );
-	const BLOCKS_KEY = `${ metaKey }_blocks`;
-	const editedRecord = useSelect(
-		( select ) => {
-			const { getEditedEntityRecord } = select( 'core' );
-
-			return getEditedEntityRecord( 'postType', postType, postId );
-		},
-		[ postType, postId ]
-	);
-	const { meta } = editedRecord;
-	const content = useMemo( () => meta?.[ metaKey ] || '', [ meta, metaKey ] );
-	const [ localBlocks, setLocalBlocks ] = useState(
-		() => editedRecord?.[ BLOCKS_KEY ]
-	);
-
-	const blocks = useMemo( () => {
-		// If we have local blocks from a recent edit, use those
-		if ( localBlocks ) {
-			return localBlocks;
-		}
-		// Otherwise use stored blocks
-		if ( editedRecord?.[ BLOCKS_KEY ] ) {
-			return editedRecord[ BLOCKS_KEY ];
-		}
-		if ( content ) {
-			return (
-				parse( content ) || [
-					createBlock( allowedBlocks?.[ 0 ] || 'core/paragraph' ),
-				]
-			);
-		}
-		return [];
-	}, [ localBlocks, editedRecord, BLOCKS_KEY, content, allowedBlocks ] );
-
-	const { editEntityRecord } = useDispatch( 'core' );
-
-	// Clear local blocks when content is successfully saved
-	useEffect( () => {
-		if ( editedRecord?.[ BLOCKS_KEY ] && localBlocks ) {
-			setLocalBlocks( null );
-		}
-	}, [ editedRecord, BLOCKS_KEY, localBlocks ] );
-
-	const onChange = useCallback(
-		( newBlocks ) => {
-			const serializedContent = __unstableSerializeAndClean( newBlocks );
-
-			if ( content === serializedContent ) {
-				return;
-			}
-
-			// Set local blocks immediately for UI responsiveness
-			setLocalBlocks( newBlocks );
-
-			const edits = {
-				[ BLOCKS_KEY ]: newBlocks,
-				meta: {
-					...meta,
-					[ metaKey ]: serializedContent,
-				},
-			};
-
-			editEntityRecord( 'postType', postType, postId, edits );
-		},
-		[
-			BLOCKS_KEY,
-			content,
-			editEntityRecord,
-			meta,
-			metaKey,
-			postId,
-			postType,
-		]
-	);
-
-	const onInput = useCallback(
-		( newBlocks ) => {
-			// Set local blocks immediately for UI responsiveness
-			setLocalBlocks( newBlocks );
-
-			const serializedContent = __unstableSerializeAndClean( newBlocks );
-
-			const edits = {
-				[ BLOCKS_KEY ]: newBlocks,
-				meta: {
-					...meta,
-					[ metaKey ]: serializedContent,
-				},
-			};
-
-			editEntityRecord( 'postType', postType, postId, edits );
-		},
-		[ BLOCKS_KEY, editEntityRecord, meta, metaKey, postId, postType ]
-	);
-
-	return { blocks, onChange, onInput };
-}
+import {
+	useNoRecursiveRenders,
+	useCanEditEntity,
+	useMetaBlockEditor,
+} from './hooks';
 
 function ReadOnlyContent( {
 	parentLayout,
@@ -275,20 +172,17 @@ export default function ContentAreaEdit( {
 } ) {
 	const { metaKey, allowedBlocks = null } = attributes;
 	const { layout = {} } = attributes;
-	const { postId, postType } = useSelect( ( select ) => {
+	const { postId, postType, editingMode } = useSelect( ( select ) => {
 		return {
 			postId: select( editorStore ).getCurrentPostId(),
 			postType: select( editorStore ).getCurrentPostType(),
+			editingMode: select( blockEditorStore ).getBlockEditingMode(),
 		};
 	} );
 	const [ hasAlreadyRendered, RecursionProvider ] =
 		useNoRecursiveRenders( postId );
 
 	const isValidPostId = 'number' === typeof postId && postId;
-
-	if ( isValidPostId && postType && hasAlreadyRendered ) {
-		return <RecursionError />;
-	}
 
 	const handleMetaKeyChange = useCallback(
 		function handleMetaKeyChange( value ) {
@@ -303,6 +197,12 @@ export default function ContentAreaEdit( {
 		},
 		[ setAttributes ]
 	);
+
+	if ( isValidPostId && postType && hasAlreadyRendered ) {
+		return <RecursionError />;
+	}
+
+	const showControls = editingMode === 'default';
 
 	return (
 		<RecursionProvider>
@@ -319,24 +219,47 @@ export default function ContentAreaEdit( {
 				<Placeholder metaKey={ metaKey } />
 			) }
 			<InspectorControls>
-				<PanelBody
-					title={ __( 'Content Settings', 'content-area-block' ) }
-				>
-					<TextControl
-						__next40pxDefaultSize
-						__nextHasNoMarginBottom
-						value={ metaKey }
-						onChange={ handleMetaKeyChange }
-						label={ __( 'Meta Key', 'content-area-block' ) }
-					/>
-					<FormTokenField
-						__next40pxDefaultSize
-						__nextHasNoMarginBottom
-						value={ allowedBlocks || [] }
-						onChange={ handleAllowedBlocksChange }
-						label={ __( 'Allowed Blocks', 'content-area-block' ) }
-					/>
-				</PanelBody>
+				{ showControls ? (
+					<PanelBody
+						title={ __(
+							'Content Area Settings',
+							'content-area-block'
+						) }
+					>
+						<TextControl
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+							value={ metaKey }
+							onChange={ handleMetaKeyChange }
+							label={ __( 'Meta Key', 'content-area-block' ) }
+						/>
+						<FormTokenField
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+							value={ allowedBlocks || [] }
+							onChange={ handleAllowedBlocksChange }
+							label={ __(
+								'Allowed Blocks',
+								'content-area-block'
+							) }
+						/>
+					</PanelBody>
+				) : (
+					<PanelBody opened={ true }>
+						<Notice isDismissible={ false } status="warning">
+							<h2 style={ { marginBlockStart: 0 } }>
+								{ __(
+									'Content Only Mode',
+									'content-area-block'
+								) }
+							</h2>
+							{ __(
+								'Edit the template to change settings for this block.',
+								'content-area-block'
+							) }
+						</Notice>
+					</PanelBody>
+				) }
 			</InspectorControls>
 		</RecursionProvider>
 	);

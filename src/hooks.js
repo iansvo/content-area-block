@@ -1,15 +1,23 @@
 /**
  * WordPress dependencies
  */
-import { useSelect } from '@wordpress/data';
-import { store as coreStore } from '@wordpress/core-data';
+import { useSelect, useDispatch } from '@wordpress/data';
+import { store as coreStore, useEntityId } from '@wordpress/core-data';
 import { useBlockEditContext } from '@wordpress/block-editor';
 import {
 	useCallback,
 	useContext,
 	createContext,
 	useMemo,
+	useEffect,
+	useRef,
+	useState,
 } from '@wordpress/element';
+import {
+	parse,
+	createBlock,
+	__unstableSerializeAndClean, // eslint-disable-line @wordpress/no-unsafe-wp-apis
+} from '@wordpress/blocks';
 
 const RenderedRefsContext = createContext( {} );
 
@@ -89,4 +97,115 @@ export function useNoRecursiveRenders( uniqueId, blockName = '' ) {
 		[ newRenderedBlocks ]
 	);
 	return [ hasAlreadyRendered, Provider ];
+}
+
+const EMPTY_ARRAY = [];
+
+export function useMetaBlockEditor( { attributes, context } ) {
+	const { postType, postId: contextPostId } = context;
+	const providerId = useEntityId( 'postType', postType );
+	const postId = contextPostId ?? providerId;
+	const { allowedBlocks, metaKey } = attributes;
+	const BLOCKS_KEY = `${ metaKey }_blocks`;
+	const editedRecord = useSelect(
+		( select ) => {
+			const { getEditedEntityRecord } = select( 'core' );
+
+			return getEditedEntityRecord( 'postType', postType, postId );
+		},
+		[ postType, postId ]
+	);
+	const { meta } = editedRecord;
+	const content = useMemo( () => meta?.[ metaKey ] || '', [ meta, metaKey ] );
+	const [ localBlocks, setLocalBlocks ] = useState(
+		() => editedRecord?.[ BLOCKS_KEY ]
+	);
+
+	const blocks = useMemo( () => {
+		// If we have local blocks from a recent edit, use those
+		if ( localBlocks ) {
+			return localBlocks;
+		}
+		// Otherwise use stored blocks
+		if ( editedRecord?.[ BLOCKS_KEY ] ) {
+			return editedRecord[ BLOCKS_KEY ];
+		}
+		if ( content ) {
+			return (
+				parse( content ) || [
+					createBlock( allowedBlocks?.[ 0 ] || 'core/paragraph' ),
+				]
+			);
+		}
+		return EMPTY_ARRAY;
+	}, [ localBlocks, editedRecord, BLOCKS_KEY, content, allowedBlocks ] );
+
+	const { editEntityRecord, __unstableCreateUndoLevel } =
+		useDispatch( coreStore );
+
+	// Clear local blocks when content is successfully saved
+	useEffect( () => {
+		if ( editedRecord?.[ BLOCKS_KEY ] && localBlocks ) {
+			setLocalBlocks( null );
+		}
+	}, [ editedRecord, BLOCKS_KEY, localBlocks ] );
+
+	const onChange = useCallback(
+		( newBlocks ) => {
+			const serializedContent = __unstableSerializeAndClean( newBlocks );
+
+			if ( content === serializedContent ) {
+				return __unstableCreateUndoLevel(
+					'postType',
+					postType,
+					postId
+				);
+			}
+
+			// Set local blocks immediately for UI responsiveness
+			setLocalBlocks( newBlocks );
+
+			const edits = {
+				[ BLOCKS_KEY ]: newBlocks,
+				meta: {
+					...meta,
+					[ metaKey ]: serializedContent,
+				},
+			};
+
+			editEntityRecord( 'postType', postType, postId, edits );
+		},
+		[
+			BLOCKS_KEY,
+			content,
+			editEntityRecord,
+			meta,
+			metaKey,
+			postId,
+			postType,
+			__unstableCreateUndoLevel,
+		]
+	);
+
+	const onInput = useCallback(
+		( newBlocks ) => {
+			// Set local blocks immediately for UI responsiveness
+			setLocalBlocks( newBlocks );
+
+			const serializedContent = __unstableSerializeAndClean( newBlocks );
+
+			const edits = {
+				[ BLOCKS_KEY ]: newBlocks,
+				meta: {
+					...meta,
+					[ metaKey ]: serializedContent,
+				},
+			};
+
+			editEntityRecord( 'postType', postType, postId, edits );
+		},
+		[ BLOCKS_KEY, editEntityRecord, meta, metaKey, postId, postType ]
+	);
+
+	return { blocks, onChange, onInput };
 }
