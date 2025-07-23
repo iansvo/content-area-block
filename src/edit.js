@@ -4,7 +4,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { useSelect } from '@wordpress/data';
 import { store as editorStore } from '@wordpress/editor';
-import { parse } from '@wordpress/blocks';
+import { parse, getBlockTypes } from '@wordpress/blocks';
 import {
 	useBlockProps,
 	useInnerBlocksProps,
@@ -198,6 +198,11 @@ export default function ContentAreaEdit( {
 		[ setAttributes ]
 	);
 
+	const blockSuggestions = useMemo( () => {
+		const blockTypes = getBlockTypes();
+		return blockTypes.map( ( block ) => block.name );
+	}, [] );
+
 	if ( isValidPostId && postType && hasAlreadyRendered ) {
 		return <RecursionError />;
 	}
@@ -238,6 +243,7 @@ export default function ContentAreaEdit( {
 							__nextHasNoMarginBottom
 							value={ allowedBlocks || [] }
 							onChange={ handleAllowedBlocksChange }
+							suggestions={ blockSuggestions }
 							label={ __(
 								'Allowed Blocks',
 								'content-area-block'
