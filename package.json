@@ -5,6 +5,7 @@
 	"author": "The WordPress Contributors",
 	"license": "GPL-2.0-or-later",
 	"main": "build/index.js",
+	"repository": "https://github.com/iansvo/content-area-block",
 	"scripts": {
 		"build": "wp-scripts build",
 		"format": "wp-scripts format",

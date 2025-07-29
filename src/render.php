@@ -9,10 +9,9 @@
  * @package ContentAreaBlock
  */
 
-namespace ContentAreaBlock;
+namespace IanSvo\ContentAreaBlock;
 
 static $seen_ids = array();
-
 
 $block_post_id = $block->context['postId'] ?? get_the_ID();
 

@@ -10,8 +10,10 @@
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       content-area-block
  *
- * @package ContentAreaBlock
+ * @package IanSvo\ContentAreaBlock
  */
+ 
+namespace IanSvo\ContentAreaBlock;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -24,13 +26,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @see https://developer.wordpress.org/reference/functions/register_block_type/
  */
-function create_block_content_block_block_init() {
-	register_block_type( __DIR__ . '/build' );
-}
-add_action( 'init', 'create_block_content_block_block_init' );
+ 
+add_action( 'init', __NAMESPACE__ . '\\init' );
 
-add_action( 'init', function() {
-	
+function init() {
+	 register_block_type( __DIR__ . '/build' );
+	 register_default_meta();
+ }
+
+function register_default_meta() {
 	$register_default_meta = apply_filters( 'content_area_block_register_default_meta', true );
 	
 	if ( ! $register_default_meta ) {
@@ -55,5 +59,5 @@ add_action( 'init', function() {
 			},
 		)
 	);
-} );
+}
 
