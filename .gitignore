@@ -6,3 +6,4 @@ node_modules
 vendor
 .DS_Store
 *.zip
+/svn-assets
