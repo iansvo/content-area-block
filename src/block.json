@@ -11,7 +11,7 @@
 	"attributes": {
 		"metaKey": {
 			"type": "string",
-			"default": ""
+			"default": "extra_content_area"
 		},
 		"allowedBlocks": {
 			"type": "array",

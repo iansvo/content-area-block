@@ -7,7 +7,14 @@ License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 Repository URI:    https://github.com/iansvo/content-area-block
 
-Adds a block content area to a site editor template and stores the blocks in a specified meta field.
+Adds a block content area to a site editor template and stores the blocks in a specified meta field. By default, the plugin will add a new meta field called `extra_content_area` for all post types which you can use to store the block markup. 
+
+If you want to disable this meta key's registration, add the following to your theme or plugin:
+
+`
+<?php
+add_filter( 'content_area_block_register_default_meta', '__return_false' );
+`
 
 == Description ==
 
