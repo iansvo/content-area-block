@@ -39,5 +39,8 @@ If you're using wp-env to run the plugin...
 
 == Changelog ==
 
+= 1.0.0 =
+* Fixed issues with undo, paste, and default block display.
+
 = 0.1.0 =
 * Release
