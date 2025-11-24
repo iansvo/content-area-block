@@ -1,10 +1,8 @@
 {
-	"core": null,
-	"plugins": [ "." ],
-	"themes": [ "https://downloads.wordpress.org/theme/ollie.1.4.9.zip" ],
-	"lifecycleScripts": {
-		"afterStart": "wp-env run cli wp theme activate ollie"
-	},
-	"port": 1337,
-	"testsPort": 1338
+  "core": null,
+  "plugins": ["."],
+  "themes": ["https://downloads.wordpress.org/theme/ollie.1.4.9.zip"],
+  "lifecycleScripts": {
+    "afterStart": "wp-env run cli wp theme activate ollie"
+  }
 }

@@ -146,15 +146,16 @@ export function useMetaBlockEditor( { attributes, context } ) {
 
 	const onChange = useCallback(
 		( newBlocks ) => {
-			const serializedContent = __unstableSerializeAndClean( newBlocks );
-
-			if ( content === serializedContent ) {
+			const noChange = blocks === newBlocks;
+			if ( noChange ) {
 				return __unstableCreateUndoLevel(
 					'postType',
 					postType,
 					postId
 				);
 			}
+
+			const serializedContent = __unstableSerializeAndClean( newBlocks );
 
 			// Set local blocks immediately for UI responsiveness
 			setLocalBlocks( newBlocks );
@@ -167,11 +168,11 @@ export function useMetaBlockEditor( { attributes, context } ) {
 				},
 			};
 
-			editEntityRecord( 'postType', postType, postId, edits );
+			editEntityRecord( 'postType', postType, postId, edits, { isCached: false } );
 		},
 		[
 			BLOCKS_KEY,
-			content,
+			blocks,
 			editEntityRecord,
 			meta,
 			metaKey,
@@ -196,7 +197,7 @@ export function useMetaBlockEditor( { attributes, context } ) {
 				},
 			};
 
-			editEntityRecord( 'postType', postType, postId, edits );
+			editEntityRecord( 'postType', postType, postId, edits, { isCached: true } );
 		},
 		[ BLOCKS_KEY, editEntityRecord, meta, metaKey, postId, postType ]
 	);

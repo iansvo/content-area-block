@@ -134,7 +134,7 @@ function EditableContent( { layout, context = {}, attributes = {} } ) {
 		__experimentalLayout: themeSupportsLayout ? usedLayout : undefined,
 		allowedBlocks:
 			allowedBlocksList.length > 0 ? allowedBlocksList : undefined,
-		defaultBlock: [ allowedBlocks?.[ 0 ] || 'core/paragraph' ],
+		template: ! blocks?.length ? [ [ 'core/paragraph' ] ] : undefined,
 	} );
 
 	return <div { ...props } />;
