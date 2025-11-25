@@ -39,17 +39,30 @@ if ( ! in_the_loop() && have_posts() ) {
 }
 
 $meta_key = $attributes['metaKey'] ?? '';
-// When inside the main loop, we want to use queried object
-// so that `the_preview` for the current post can apply.
-// We force this behavior by omitting the third argument (post ID) from the `get_the_content`.
-$content = $meta_key ? get_post_meta( $block_post_id, $meta_key, true ) ?? $content : '';
+$content  = $meta_key ? get_post_meta( $block_post_id, $meta_key, true ) ?? $content : '';
 
-/** This filter is documented in wp-includes/post-template.php */
-$content = apply_filters( 'the_content', str_replace( ']]>', ']]&gt;', $content ) );
+/**
+ * Filter the block's frontend output.
+ *
+ * @param string $parsed_content The parsed block content for output.
+ * @param array  $attributes     The block attributes.
+ * @param string $content        The original unparsed block content.
+ * @param object $block          The current parsed block object.
+ *
+ * @return The block content for output on the frontend.
+ */
+$output = apply_filters( 
+	'iansvo/content_area_block_content', 
+	do_blocks( str_replace( ']]>', ']]&gt;', $content ) ), 
+	$block_post_id, 
+	$attributes, 
+	$content, 
+	$block 
+);
 unset( $seen_ids[ $block_post_id ] );
 
-if ( empty( $content ) ) {
+if ( empty( $output ) ) {
 	return '';
 }
 
-echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
