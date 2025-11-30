@@ -114,16 +114,24 @@ function EditableContent( { layout, context = {}, attributes = {} } ) {
 	const allowedBlocksList = useMemo( () => {
 		const blockTypes = getBlockTypes();
 
-		const list =
+		let list =
 			blockFilter === 'allow'
 				? allowedBlocks
 				: blockTypes.map( ( { name } ) => name );
 
-		return blockFilter === 'disallow'
-			? list.filter(
-					( blockType ) => ! disallowedBlocks.includes( blockType )
-			  )
-			: list;
+		list =
+			blockFilter === 'disallow'
+				? list.filter(
+						( blockType ) => ! disallowedBlocks.includes( blockType )
+				  )
+				: list;
+
+		// Always ensure paragraph is available
+		if ( list.length > 0 && ! list.includes( 'core/paragraph' ) ) {
+			list = [ 'core/paragraph', ...list ];
+		}
+
+		return list;
 	}, [ blockFilter, allowedBlocks, disallowedBlocks ] );
 
 	const blockProps = useBlockProps();
@@ -135,6 +143,8 @@ function EditableContent( { layout, context = {}, attributes = {} } ) {
 		allowedBlocks:
 			allowedBlocksList.length > 0 ? allowedBlocksList : undefined,
 		template: ! blocks?.length ? [ [ 'core/paragraph' ] ] : undefined,
+		__experimentalDefaultBlock: { name: 'core/paragraph' },
+		__experimentalDirectInsert: true,
 	} );
 
 	return <div { ...props } />;
