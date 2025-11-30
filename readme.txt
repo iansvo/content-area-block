@@ -2,7 +2,7 @@
 Contributors:      iansvo
 Tags:              block, fse, site-editor, content, template
 Tested up to:      6.8
-Stable tag:        0.1.0
+Stable tag:        1.0.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 Repository URI:    https://github.com/iansvo/content-area-block
@@ -38,6 +38,9 @@ If you're using wp-env to run the plugin...
 2. Run `npm run start` to watch for file changes.
 
 == Changelog ==
+
+= 1.0.1 =
+* Additional minor bug fixes
 
 = 1.0.0 =
 * Fixed issues with undo, paste, and default block display.
