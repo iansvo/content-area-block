@@ -45,6 +45,7 @@ $content  = $meta_key ? get_post_meta( $block_post_id, $meta_key, true ) ?? $con
  * Filter the block's frontend output.
  *
  * @param string $parsed_content The parsed block content for output.
+ * @param int    $block_post_id  The current post ID the block is displaying in.
  * @param array  $attributes     The block attributes.
  * @param string $content        The original unparsed block content.
  * @param object $block          The current parsed block object.
@@ -52,7 +53,7 @@ $content  = $meta_key ? get_post_meta( $block_post_id, $meta_key, true ) ?? $con
  * @return The block content for output on the frontend.
  */
 $output = apply_filters( 
-	'iansvo/content_area_block_content', 
+	'content_area_block_content', 
 	do_blocks( str_replace( ']]>', ']]&gt;', $content ) ), 
 	$block_post_id, 
 	$attributes, 
