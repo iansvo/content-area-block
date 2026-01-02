@@ -1,8 +1,8 @@
 === Content Area Block ===
 Contributors:      iansvo
 Tags:              block, fse, site-editor, content, template
-Tested up to:      6.8
-Stable tag:        1.0.1
+Tested up to:      6.9
+Stable tag:        1.0.2
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 Repository URI:    https://github.com/iansvo/content-area-block
