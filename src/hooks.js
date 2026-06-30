@@ -119,20 +119,28 @@ export function useMetaBlockEditor( { attributes, context } ) {
 		() => editedRecord?.[ BLOCKS_KEY ]
 	);
 
+	// Depend on the stable `content` string and the stored blocks array — NOT
+	// the whole `editedRecord`, which `getEditedEntityRecord` hands back as a
+	// new reference on nearly every render. Depending on it re-ran
+	// `parse( content )` on each interaction, minting fresh inner-block
+	// clientIds that orphaned the current selection (WP 7.0 symptom: inner
+	// blocks visible in List View but impossible to select or edit).
+	const storedBlocks = editedRecord?.[ BLOCKS_KEY ];
+
 	const blocks = useMemo( () => {
 		// If we have local blocks from a recent edit, use those
 		if ( localBlocks ) {
 			return localBlocks;
 		}
 		// Otherwise use stored blocks
-		if ( editedRecord?.[ BLOCKS_KEY ] ) {
-			return editedRecord[ BLOCKS_KEY ];
+		if ( storedBlocks ) {
+			return storedBlocks;
 		}
 		if ( content ) {
 			return parse( content );
 		}
 		return EMPTY_ARRAY;
-	}, [ localBlocks, editedRecord, BLOCKS_KEY, content ] );
+	}, [ localBlocks, storedBlocks, content ] );
 
 	const { editEntityRecord, __unstableCreateUndoLevel } =
 		useDispatch( coreStore );
