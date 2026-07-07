@@ -32,7 +32,7 @@
 		"lock": false,
 		"contentRole": true
 	},
-	"usesContext": [ "postId", "postType", "queryId"  ],
+	"usesContext": [ "postId", "postType", "queryId" ],
 	"textdomain": "content-area-block",
 	"editorScript": "file:./index.js",
 	"render": "file:./render.php"

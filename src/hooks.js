@@ -176,7 +176,9 @@ export function useMetaBlockEditor( { attributes, context } ) {
 				},
 			};
 
-			editEntityRecord( 'postType', postType, postId, edits, { isCached: false } );
+			editEntityRecord( 'postType', postType, postId, edits, {
+				isCached: false,
+			} );
 		},
 		[
 			BLOCKS_KEY,
@@ -205,7 +207,9 @@ export function useMetaBlockEditor( { attributes, context } ) {
 				},
 			};
 
-			editEntityRecord( 'postType', postType, postId, edits, { isCached: true } );
+			editEntityRecord( 'postType', postType, postId, edits, {
+				isCached: true,
+			} );
 		},
 		[ BLOCKS_KEY, editEntityRecord, meta, metaKey, postId, postType ]
 	);

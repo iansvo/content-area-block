@@ -8,9 +8,7 @@ import { parse, getBlockTypes } from '@wordpress/blocks';
 import {
 	useBlockProps,
 	useInnerBlocksProps,
-	useSettings,
 	useBlockEditingMode,
-	store as blockEditorStore,
 	Warning,
 	InspectorControls,
 	__experimentalUseBlockPreview as useBlockPreview, // eslint-disable-line @wordpress/no-unsafe-wp-apis
@@ -95,7 +93,7 @@ function ReadOnlyContent( {
 	);
 }
 
-function EditableContent( { layout, context = {}, attributes = {} } ) {
+function EditableContent( { context = {}, attributes = {} } ) {
 	const {
 		allowedBlocks = [],
 		disallowedBlocks = [],
@@ -108,7 +106,10 @@ function EditableContent( { layout, context = {}, attributes = {} } ) {
 
 	const allowedBlocksList = useMemo( () => {
 		const blockTypes = getBlockTypes();
-		const filterMode = blockFilter === 'allow' && Array.isArray( allowedBlocks ) ? 'allow' : 'disallow';
+		const filterMode =
+			blockFilter === 'allow' && Array.isArray( allowedBlocks )
+				? 'allow'
+				: 'disallow';
 
 		let list =
 			filterMode === 'allow'
@@ -118,7 +119,8 @@ function EditableContent( { layout, context = {}, attributes = {} } ) {
 		list =
 			blockFilter === 'disallow'
 				? list.filter(
-						( blockType ) => ! disallowedBlocks.includes( blockType )
+						( blockType ) =>
+							! disallowedBlocks.includes( blockType )
 				  )
 				: list;
 
@@ -208,14 +210,13 @@ export default function ContentAreaEdit( {
 		disallowedBlocks = [],
 		blockFilter = 'allow',
 	} = attributes;
-	const { layout = {} } = attributes;
-	const { postId, postType, editingMode } = useSelect( ( select ) => {
+	const { postId, postType } = useSelect( ( select ) => {
 		return {
 			postId: select( editorStore ).getCurrentPostId(),
 			postType: select( editorStore ).getCurrentPostType(),
-			editingMode: select( blockEditorStore ).getBlockEditingMode(),
 		};
 	} );
+	const editingMode = useBlockEditingMode();
 	const [ hasAlreadyRendered, RecursionProvider ] =
 		useNoRecursiveRenders( postId );
 
@@ -258,7 +259,6 @@ export default function ContentAreaEdit( {
 			{ isValidPostId && postType ? (
 				<Content
 					context={ context }
-					layout={ layout }
 					attributes={ attributes }
 					postId={ postId }
 					postType={ postType }
