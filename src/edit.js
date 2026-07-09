@@ -8,8 +8,7 @@ import { parse, getBlockTypes } from '@wordpress/blocks';
 import {
 	useBlockProps,
 	useInnerBlocksProps,
-	useSettings,
-	store as blockEditorStore,
+	useBlockEditingMode,
 	Warning,
 	InspectorControls,
 	__experimentalUseBlockPreview as useBlockPreview, // eslint-disable-line @wordpress/no-unsafe-wp-apis
@@ -94,18 +93,12 @@ function ReadOnlyContent( {
 	);
 }
 
-function EditableContent( { layout, context = {}, attributes = {} } ) {
+function EditableContent( { context = {}, attributes = {} } ) {
 	const {
 		allowedBlocks = [],
 		disallowedBlocks = [],
 		blockFilter = 'allow',
 	} = attributes;
-	const themeSupportsLayout = useSelect( ( select ) => {
-		const { getSettings } = select( blockEditorStore );
-		return getSettings()?.supportsLayout;
-	}, [] );
-	const defaultLayout = useSettings( [ 'layout' ] )[ 0 ] || {};
-	const usedLayout = !! layout && layout.inherit ? defaultLayout : layout;
 	const { blocks, onChange, onInput } = useMetaBlockEditor( {
 		attributes,
 		context,
@@ -113,16 +106,21 @@ function EditableContent( { layout, context = {}, attributes = {} } ) {
 
 	const allowedBlocksList = useMemo( () => {
 		const blockTypes = getBlockTypes();
+		const filterMode =
+			blockFilter === 'allow' && Array.isArray( allowedBlocks )
+				? 'allow'
+				: 'disallow';
 
 		let list =
-			blockFilter === 'allow'
+			filterMode === 'allow'
 				? allowedBlocks
 				: blockTypes.map( ( { name } ) => name );
 
 		list =
 			blockFilter === 'disallow'
 				? list.filter(
-						( blockType ) => ! disallowedBlocks.includes( blockType )
+						( blockType ) =>
+							! disallowedBlocks.includes( blockType )
 				  )
 				: list;
 
@@ -135,19 +133,16 @@ function EditableContent( { layout, context = {}, attributes = {} } ) {
 	}, [ blockFilter, allowedBlocks, disallowedBlocks ] );
 
 	const blockProps = useBlockProps();
-	const props = useInnerBlocksProps( blockProps, {
+	const innerBlocksProps = useInnerBlocksProps( blockProps, {
 		value: blocks,
 		onInput,
 		onChange,
-		__experimentalLayout: themeSupportsLayout ? usedLayout : undefined,
 		allowedBlocks:
 			allowedBlocksList.length > 0 ? allowedBlocksList : undefined,
 		template: ! blocks?.length ? [ [ 'core/paragraph' ] ] : undefined,
-		__experimentalDefaultBlock: { name: 'core/paragraph' },
-		__experimentalDirectInsert: true,
 	} );
 
-	return <div { ...props } />;
+	return <div { ...innerBlocksProps } />;
 }
 
 function Content( props ) {
@@ -215,14 +210,13 @@ export default function ContentAreaEdit( {
 		disallowedBlocks = [],
 		blockFilter = 'allow',
 	} = attributes;
-	const { layout = {} } = attributes;
-	const { postId, postType, editingMode } = useSelect( ( select ) => {
+	const { postId, postType } = useSelect( ( select ) => {
 		return {
 			postId: select( editorStore ).getCurrentPostId(),
 			postType: select( editorStore ).getCurrentPostType(),
-			editingMode: select( blockEditorStore ).getBlockEditingMode(),
 		};
 	} );
+	const editingMode = useBlockEditingMode();
 	const [ hasAlreadyRendered, RecursionProvider ] =
 		useNoRecursiveRenders( postId );
 
@@ -265,7 +259,6 @@ export default function ContentAreaEdit( {
 			{ isValidPostId && postType ? (
 				<Content
 					context={ context }
-					layout={ layout }
 					attributes={ attributes }
 					postId={ postId }
 					postType={ postType }

@@ -13,13 +13,6 @@
 			"type": "string",
 			"default": "extra_content_area"
 		},
-		"allowedBlocks": {
-			"type": "array",
-			"default": [],
-			"items": {
-				"type": "string"
-			}
-		},
 		"disallowedBlocks": {
 			"type": "array",
 			"default": [],
@@ -34,9 +27,12 @@
 		}
 	},
 	"supports": {
-		"html": false
+		"html": false,
+		"allowedBlocks": true,
+		"lock": false,
+		"contentRole": true
 	},
-	"usesContext": [ "postId", "postType" ],
+	"usesContext": [ "postId", "postType", "queryId" ],
 	"textdomain": "content-area-block",
 	"editorScript": "file:./index.js",
 	"render": "file:./render.php"

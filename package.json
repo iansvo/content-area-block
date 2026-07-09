@@ -1,8 +1,8 @@
 {
 	"name": "content-area-block",
-	"version": "0.1.0",
-	"description": "Example block scaffolded with Create Block tool.",
-	"author": "The WordPress Contributors",
+	"version": "1.0.2",
+	"description": "Add an outlet for blocks in a template that stores block data in a meta field.",
+	"author": "Ian Svoboda",
 	"license": "GPL-2.0-or-later",
 	"main": "build/index.js",
 	"repository": "https://github.com/iansvo/content-area-block",
