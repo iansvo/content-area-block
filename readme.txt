@@ -2,7 +2,7 @@
 Contributors:      iansvo
 Tags:              block, fse, site-editor, content, template
 Tested up to:      7.0
-Stable tag:        1.0.2
+Stable tag:        1.0.3
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 Repository URI:    https://github.com/iansvo/content-area-block
@@ -71,9 +71,11 @@ If you're using wp-env to run the plugin...
 
 == Changelog ==
 
-= 1.0.2 =
+= 1.0.3 =
 * Fixed: in the WordPress 7.0 page editor, blocks inside the Content Area could not be selected or edited (they only appeared in the List View). The meta-backed inner blocks are now kept stable across re-renders, so their client IDs no longer regenerate on every interaction.
-* Added content-only editing support (`contentRole`) and verified compatibility with WordPress 6.9 and 7.0.
+
+= 1.0.2 =
+* Added content-only editing support (`contentRole`) and verified compatibility with WordPress 6.9.
 
 = 1.0.1 =
 * Additional minor bug fixes, improve filtering.
